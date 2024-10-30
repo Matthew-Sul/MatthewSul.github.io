@@ -1,0 +1,695 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"/><title>CS180 Project 1: Images of the Russian Empire -- Colorizing the Prokudin-Gorskii Photo Collection</title><style>
+/* cspell:disable-file */
+/* webkit printing magic: print all background colors */
+html {
+	-webkit-print-color-adjust: exact;
+}
+* {
+	box-sizing: border-box;
+	-webkit-print-color-adjust: exact;
+}
+
+html,
+body {
+	margin: 0;
+	padding: 0;
+}
+@media only screen {
+	body {
+		margin: 2em auto;
+		max-width: 900px;
+		color: rgb(55, 53, 47);
+	}
+}
+
+body {
+	line-height: 1.5;
+	white-space: pre-wrap;
+}
+
+a,
+a.visited {
+	color: inherit;
+	text-decoration: underline;
+}
+
+.pdf-relative-link-path {
+	font-size: 80%;
+	color: #444;
+}
+
+h1,
+h2,
+h3 {
+	letter-spacing: -0.01em;
+	line-height: 1.2;
+	font-weight: 600;
+	margin-bottom: 0;
+}
+
+.page-title {
+	font-size: 2.5rem;
+	font-weight: 700;
+	margin-top: 0;
+	margin-bottom: 0.75em;
+}
+
+h1 {
+	font-size: 1.875rem;
+	margin-top: 1.875rem;
+}
+
+h2 {
+	font-size: 1.5rem;
+	margin-top: 1.5rem;
+}
+
+h3 {
+	font-size: 1.25rem;
+	margin-top: 1.25rem;
+}
+
+.source {
+	border: 1px solid #ddd;
+	border-radius: 3px;
+	padding: 1.5em;
+	word-break: break-all;
+}
+
+.callout {
+	border-radius: 3px;
+	padding: 1rem;
+}
+
+figure {
+	margin: 1.25em 0;
+	page-break-inside: avoid;
+}
+
+figcaption {
+	opacity: 0.5;
+	font-size: 85%;
+	margin-top: 0.5em;
+}
+
+mark {
+	background-color: transparent;
+}
+
+.indented {
+	padding-left: 1.5em;
+}
+
+hr {
+	background: transparent;
+	display: block;
+	width: 100%;
+	height: 1px;
+	visibility: visible;
+	border: none;
+	border-bottom: 1px solid rgba(55, 53, 47, 0.09);
+}
+
+img {
+	max-width: 100%;
+}
+
+@media only print {
+	img {
+		max-height: 100vh;
+		object-fit: contain;
+	}
+}
+
+@page {
+	margin: 1in;
+}
+
+.collection-content {
+	font-size: 0.875rem;
+}
+
+.column-list {
+	display: flex;
+	justify-content: space-between;
+}
+
+.column {
+	padding: 0 1em;
+}
+
+.column:first-child {
+	padding-left: 0;
+}
+
+.column:last-child {
+	padding-right: 0;
+}
+
+.table_of_contents-item {
+	display: block;
+	font-size: 0.875rem;
+	line-height: 1.3;
+	padding: 0.125rem;
+}
+
+.table_of_contents-indent-1 {
+	margin-left: 1.5rem;
+}
+
+.table_of_contents-indent-2 {
+	margin-left: 3rem;
+}
+
+.table_of_contents-indent-3 {
+	margin-left: 4.5rem;
+}
+
+.table_of_contents-link {
+	text-decoration: none;
+	opacity: 0.7;
+	border-bottom: 1px solid rgba(55, 53, 47, 0.18);
+}
+
+table,
+th,
+td {
+	border: 1px solid rgba(55, 53, 47, 0.09);
+	border-collapse: collapse;
+}
+
+table {
+	border-left: none;
+	border-right: none;
+}
+
+th,
+td {
+	font-weight: normal;
+	padding: 0.25em 0.5em;
+	line-height: 1.5;
+	min-height: 1.5em;
+	text-align: left;
+}
+
+th {
+	color: rgba(55, 53, 47, 0.6);
+}
+
+ol,
+ul {
+	margin: 0;
+	margin-block-start: 0.6em;
+	margin-block-end: 0.6em;
+}
+
+li > ol:first-child,
+li > ul:first-child {
+	margin-block-start: 0.6em;
+}
+
+ul > li {
+	list-style: disc;
+}
+
+ul.to-do-list {
+	padding-inline-start: 0;
+}
+
+ul.to-do-list > li {
+	list-style: none;
+}
+
+.to-do-children-checked {
+	text-decoration: line-through;
+	opacity: 0.375;
+}
+
+ul.toggle > li {
+	list-style: none;
+}
+
+ul {
+	padding-inline-start: 1.7em;
+}
+
+ul > li {
+	padding-left: 0.1em;
+}
+
+ol {
+	padding-inline-start: 1.6em;
+}
+
+ol > li {
+	padding-left: 0.2em;
+}
+
+.mono ol {
+	padding-inline-start: 2em;
+}
+
+.mono ol > li {
+	text-indent: -0.4em;
+}
+
+.toggle {
+	padding-inline-start: 0em;
+	list-style-type: none;
+}
+
+/* Indent toggle children */
+.toggle > li > details {
+	padding-left: 1.7em;
+}
+
+.toggle > li > details > summary {
+	margin-left: -1.1em;
+}
+
+.selected-value {
+	display: inline-block;
+	padding: 0 0.5em;
+	background: rgba(206, 205, 202, 0.5);
+	border-radius: 3px;
+	margin-right: 0.5em;
+	margin-top: 0.3em;
+	margin-bottom: 0.3em;
+	white-space: nowrap;
+}
+
+.collection-title {
+	display: inline-block;
+	margin-right: 1em;
+}
+
+.page-description {
+    margin-bottom: 2em;
+}
+
+.simple-table {
+	margin-top: 1em;
+	font-size: 0.875rem;
+	empty-cells: show;
+}
+.simple-table td {
+	height: 29px;
+	min-width: 120px;
+}
+
+.simple-table th {
+	height: 29px;
+	min-width: 120px;
+}
+
+.simple-table-header-color {
+	background: rgb(247, 246, 243);
+	color: black;
+}
+.simple-table-header {
+	font-weight: 500;
+}
+
+time {
+	opacity: 0.5;
+}
+
+.icon {
+	display: inline-block;
+	max-width: 1.2em;
+	max-height: 1.2em;
+	text-decoration: none;
+	vertical-align: text-bottom;
+	margin-right: 0.5em;
+}
+
+img.icon {
+	border-radius: 3px;
+}
+
+.user-icon {
+	width: 1.5em;
+	height: 1.5em;
+	border-radius: 100%;
+	margin-right: 0.5rem;
+}
+
+.user-icon-inner {
+	font-size: 0.8em;
+}
+
+.text-icon {
+	border: 1px solid #000;
+	text-align: center;
+}
+
+.page-cover-image {
+	display: block;
+	object-fit: cover;
+	width: 100%;
+	max-height: 30vh;
+}
+
+.page-header-icon {
+	font-size: 3rem;
+	margin-bottom: 1rem;
+}
+
+.page-header-icon-with-cover {
+	margin-top: -0.72em;
+	margin-left: 0.07em;
+}
+
+.page-header-icon img {
+	border-radius: 3px;
+}
+
+.link-to-page {
+	margin: 1em 0;
+	padding: 0;
+	border: none;
+	font-weight: 500;
+}
+
+p > .user {
+	opacity: 0.5;
+}
+
+td > .user,
+td > time {
+	white-space: nowrap;
+}
+
+input[type="checkbox"] {
+	transform: scale(1.5);
+	margin-right: 0.6em;
+	vertical-align: middle;
+}
+
+p {
+	margin-top: 0.5em;
+	margin-bottom: 0.5em;
+}
+
+.image {
+	border: none;
+	margin: 1.5em 0;
+	padding: 0;
+	border-radius: 0;
+	text-align: center;
+}
+
+.code,
+code {
+	background: rgba(135, 131, 120, 0.15);
+	border-radius: 3px;
+	padding: 0.2em 0.4em;
+	border-radius: 3px;
+	font-size: 85%;
+	tab-size: 2;
+}
+
+code {
+	color: #eb5757;
+}
+
+.code {
+	padding: 1.5em 1em;
+}
+
+.code-wrap {
+	white-space: pre-wrap;
+	word-break: break-all;
+}
+
+.code > code {
+	background: none;
+	padding: 0;
+	font-size: 100%;
+	color: inherit;
+}
+
+blockquote {
+	font-size: 1.25em;
+	margin: 1em 0;
+	padding-left: 1em;
+	border-left: 3px solid rgb(55, 53, 47);
+}
+
+.bookmark {
+	text-decoration: none;
+	max-height: 8em;
+	padding: 0;
+	display: flex;
+	width: 100%;
+	align-items: stretch;
+}
+
+.bookmark-title {
+	font-size: 0.85em;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	height: 1.75em;
+	white-space: nowrap;
+}
+
+.bookmark-text {
+	display: flex;
+	flex-direction: column;
+}
+
+.bookmark-info {
+	flex: 4 1 180px;
+	padding: 12px 14px 14px;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+}
+
+.bookmark-image {
+	width: 33%;
+	flex: 1 1 180px;
+	display: block;
+	position: relative;
+	object-fit: cover;
+	border-radius: 1px;
+}
+
+.bookmark-description {
+	color: rgba(55, 53, 47, 0.6);
+	font-size: 0.75em;
+	overflow: hidden;
+	max-height: 4.5em;
+	word-break: break-word;
+}
+
+.bookmark-href {
+	font-size: 0.75em;
+	margin-top: 0.25em;
+}
+
+.sans { font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol"; }
+.code { font-family: "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace; }
+.serif { font-family: Lyon-Text, Georgia, ui-serif, serif; }
+.mono { font-family: iawriter-mono, Nitti, Menlo, Courier, monospace; }
+.pdf .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK JP'; }
+.pdf:lang(zh-CN) .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK SC'; }
+.pdf:lang(zh-TW) .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK TC'; }
+.pdf:lang(ko-KR) .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK KR'; }
+.pdf .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK JP'; }
+.pdf:lang(zh-CN) .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK SC'; }
+.pdf:lang(zh-TW) .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK TC'; }
+.pdf:lang(ko-KR) .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK KR'; }
+.pdf .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK JP'; }
+.pdf:lang(zh-CN) .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK SC'; }
+.pdf:lang(zh-TW) .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK TC'; }
+.pdf:lang(ko-KR) .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK KR'; }
+.pdf .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK JP'; }
+.pdf:lang(zh-CN) .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK SC'; }
+.pdf:lang(zh-TW) .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK TC'; }
+.pdf:lang(ko-KR) .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK KR'; }
+.highlight-default {
+	color: rgba(55, 53, 47, 1);
+}
+.highlight-gray {
+	color: rgba(120, 119, 116, 1);
+	fill: rgba(120, 119, 116, 1);
+}
+.highlight-brown {
+	color: rgba(159, 107, 83, 1);
+	fill: rgba(159, 107, 83, 1);
+}
+.highlight-orange {
+	color: rgba(217, 115, 13, 1);
+	fill: rgba(217, 115, 13, 1);
+}
+.highlight-yellow {
+	color: rgba(203, 145, 47, 1);
+	fill: rgba(203, 145, 47, 1);
+}
+.highlight-teal {
+	color: rgba(68, 131, 97, 1);
+	fill: rgba(68, 131, 97, 1);
+}
+.highlight-blue {
+	color: rgba(51, 126, 169, 1);
+	fill: rgba(51, 126, 169, 1);
+}
+.highlight-purple {
+	color: rgba(144, 101, 176, 1);
+	fill: rgba(144, 101, 176, 1);
+}
+.highlight-pink {
+	color: rgba(193, 76, 138, 1);
+	fill: rgba(193, 76, 138, 1);
+}
+.highlight-red {
+	color: rgba(212, 76, 71, 1);
+	fill: rgba(212, 76, 71, 1);
+}
+.highlight-default_background {
+	color: rgba(55, 53, 47, 1);
+}
+.highlight-gray_background {
+	background: rgba(241, 241, 239, 1);
+}
+.highlight-brown_background {
+	background: rgba(244, 238, 238, 1);
+}
+.highlight-orange_background {
+	background: rgba(251, 236, 221, 1);
+}
+.highlight-yellow_background {
+	background: rgba(251, 237, 214, 1);
+}
+.highlight-teal_background {
+	background: rgba(237, 243, 236, 1);
+}
+.highlight-blue_background {
+	background: rgba(231, 243, 248, 1);
+}
+.highlight-purple_background {
+	background: rgba(244, 240, 247, 0.8);
+}
+.highlight-pink_background {
+	background: rgba(249, 238, 243, 0.8);
+}
+.highlight-red_background {
+	background: rgba(253, 235, 236, 1);
+}
+.block-color-default {
+	color: inherit;
+	fill: inherit;
+}
+.block-color-gray {
+	color: rgba(120, 119, 116, 1);
+	fill: rgba(120, 119, 116, 1);
+}
+.block-color-brown {
+	color: rgba(159, 107, 83, 1);
+	fill: rgba(159, 107, 83, 1);
+}
+.block-color-orange {
+	color: rgba(217, 115, 13, 1);
+	fill: rgba(217, 115, 13, 1);
+}
+.block-color-yellow {
+	color: rgba(203, 145, 47, 1);
+	fill: rgba(203, 145, 47, 1);
+}
+.block-color-teal {
+	color: rgba(68, 131, 97, 1);
+	fill: rgba(68, 131, 97, 1);
+}
+.block-color-blue {
+	color: rgba(51, 126, 169, 1);
+	fill: rgba(51, 126, 169, 1);
+}
+.block-color-purple {
+	color: rgba(144, 101, 176, 1);
+	fill: rgba(144, 101, 176, 1);
+}
+.block-color-pink {
+	color: rgba(193, 76, 138, 1);
+	fill: rgba(193, 76, 138, 1);
+}
+.block-color-red {
+	color: rgba(212, 76, 71, 1);
+	fill: rgba(212, 76, 71, 1);
+}
+.block-color-default_background {
+	color: inherit;
+	fill: inherit;
+}
+.block-color-gray_background {
+	background: rgba(241, 241, 239, 1);
+}
+.block-color-brown_background {
+	background: rgba(244, 238, 238, 1);
+}
+.block-color-orange_background {
+	background: rgba(251, 236, 221, 1);
+}
+.block-color-yellow_background {
+	background: rgba(251, 237, 214, 1);
+}
+.block-color-teal_background {
+	background: rgba(237, 243, 236, 1);
+}
+.block-color-blue_background {
+	background: rgba(231, 243, 248, 1);
+}
+.block-color-purple_background {
+	background: rgba(244, 240, 247, 0.8);
+}
+.block-color-pink_background {
+	background: rgba(249, 238, 243, 0.8);
+}
+.block-color-red_background {
+	background: rgba(253, 235, 236, 1);
+}
+.select-value-color-uiBlue { background-color: rgba(35, 131, 226, .07); }
+.select-value-color-pink { background-color: rgba(245, 224, 233, 1); }
+.select-value-color-purple { background-color: rgba(232, 222, 238, 1); }
+.select-value-color-green { background-color: rgba(219, 237, 219, 1); }
+.select-value-color-gray { background-color: rgba(227, 226, 224, 1); }
+.select-value-color-transparentGray { background-color: rgba(227, 226, 224, 0); }
+.select-value-color-translucentGray { background-color: rgba(0, 0, 0, 0.06); }
+.select-value-color-orange { background-color: rgba(250, 222, 201, 1); }
+.select-value-color-brown { background-color: rgba(238, 224, 218, 1); }
+.select-value-color-red { background-color: rgba(255, 226, 221, 1); }
+.select-value-color-yellow { background-color: rgba(249, 228, 188, 1); }
+.select-value-color-blue { background-color: rgba(211, 229, 239, 1); }
+.select-value-color-pageGlass { background-color: undefined; }
+.select-value-color-washGlass { background-color: undefined; }
+
+.checkbox {
+	display: inline-flex;
+	vertical-align: text-bottom;
+	width: 16;
+	height: 16;
+	background-size: 16px;
+	margin-left: 2px;
+	margin-right: 5px;
+}
+
+.checkbox-on {
+	background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%2216%22%20height%3D%2216%22%20viewBox%3D%220%200%2016%2016%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%3Crect%20width%3D%2216%22%20height%3D%2216%22%20fill%3D%22%2358A9D7%22%2F%3E%0A%3Cpath%20d%3D%22M6.71429%2012.2852L14%204.9995L12.7143%203.71436L6.71429%209.71378L3.28571%206.2831L2%207.57092L6.71429%2012.2852Z%22%20fill%3D%22white%22%2F%3E%0A%3C%2Fsvg%3E");
+}
+
+.checkbox-off {
+	background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%2216%22%20height%3D%2216%22%20viewBox%3D%220%200%2016%2016%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%3Crect%20x%3D%220.75%22%20y%3D%220.75%22%20width%3D%2214.5%22%20height%3D%2214.5%22%20fill%3D%22white%22%20stroke%3D%22%2336352F%22%20stroke-width%3D%221.5%22%2F%3E%0A%3C%2Fsvg%3E");
+}
+	
+</style></head><body><article id="9283d400-d07e-4406-a726-c797a3640c60" class="page sans"><header><h1 class="page-title">CS180 Project 1: Images of the Russian Empire -- Colorizing the Prokudin-Gorskii Photo Collection</h1><p class="page-description"></p></header><div class="page-body"><p id="59d8c6ba-966e-4ce1-a36e-8729cb2837b3" class="">A Matthew Sulistijowadi Creation</p><p id="f412230d-5e7c-4069-8356-ee89a1322130" class=""> </p><h1 id="dfa43762-f64b-4775-981f-ef83fbbbae7c" class="">Omnipotent Overview</h1><p id="996aef62-58e9-4973-9956-7e5ad2f5b5d7" class="">The project’s primary objective is to use the digitized versions of red, green and blue (image) channels to align, stack and restore the image in full color using image processing methods. For all methods, I aligned the red and green channels to the blue one (as my baseline).</p><p id="f3ee007b-b05d-4d26-a764-dc45b0500193" class="">
+</p><h2 id="72385255-b32a-418e-a4e7-f842682fe665" class="">Basic Baseline (align image with no image processing methods)</h2><p id="a756c405-10e0-432f-8b09-1a0eaecf0f04" class="">Using the headbutt throw approach and not processing them in any meaningful way leads to ghosting and blurry images.</p><p id="b1d93da1-2600-4c97-99f2-3b021771f828" class="">
+</p><h2 id="0769f2c1-a817-4f86-82bb-bb577e0f1b5e" class="">Sweet Summer Child Method (Exhaustive Search)</h2><p id="98047a8d-277a-4875-81d0-b255a1e92607" class="">Aligned the images as best as I can by translating (used np.roll) images with varying offsets. The metric working best for me among L2 Norm, NCC and SSD was SSD. Since the .tif files were huge and exhaustively searching the entire thing would go at the speed of old people Mystic, elected to use the recommended [-15,15] range from the spec (albeit it still takes quite a bit).  Cropped all the edges by 8% to elim most border discrepancies before processing with exhaustive search.</p><h3 id="c3e60cda-ddab-4fdf-b8dc-8828476f10ec" class="">Smaller .jpeg files</h3><div id="9479606c-baa6-46b5-95b8-1712f7711818" class="column-list"><div id="08c5caf0-5142-40e8-a90f-3a74b83bd0cf" style="width:50%" class="column"><figure id="02a026ce-0903-45f8-b10e-777450cb0663" class="image"><a href="fout_cathedral.jpg"><img style="width:302px" src="fout_cathedral.jpg"/></a><figcaption>cathedral.jpg (Green shift: [5,2] Red shift [12,3])</figcaption></figure></div><div id="4abd83b0-3cba-455a-b189-39ee3b6b1429" style="width:50%" class="column"><figure id="ab0a0f96-3ac3-4a98-a7cf-d45555dda4fb" class="image"><a href="fout_tobolsk.jpg"><img style="width:308px" src="fout_tobolsk.jpg"/></a><figcaption>tobolsk.jpg (Green shift: [3,2] Red shift [6,3])</figcaption></figure></div></div><figure id="e7fb2d58-3c1b-4975-9c0f-b7de6c691918" class="image"><a href="fout_monastery.jpg"><img style="width:303px" src="fout_monastery.jpg"/></a><figcaption>monastery.jpg (Green shift: [-3,2] Red shift [3,2])</figcaption></figure><h3 id="4ef008ae-cd94-455d-8ef3-b94a7603e1d8" class="">Larger .tif files</h3><div id="7822e20e-f675-4678-8172-442ebc929888" class="column-list"><div id="58be80f8-2862-40f1-8d19-3291bde3bd71" style="width:50%" class="column"><figure id="7fbff64f-6f70-4119-b2e3-46b45025cbb1" class="image"><a href="fout_church.jpg"><img style="width:2810px" src="fout_church.jpg"/></a><figcaption>church.tif  (Green shift: [14,4] Red shift [14-15])</figcaption></figure></div><div id="304eb6b0-aaac-4d7d-80a8-8ed38356b9b0" style="width:50%" class="column"><figure id="a9876b6c-25a1-4951-9404-f30c1caefb6d" class="image"><a href="fout_emir.jpg"><img style="width:2862px" src="fout_emir.jpg"/></a><figcaption>emir.tif  (Green shift: [14,14] Red shift [14,13])</figcaption></figure></div></div><div id="50405797-61b0-4b61-88a5-50678b487970" class="column-list"><div id="0d15045a-cad5-4b6b-9403-878c14da5579" style="width:50%" class="column"><figure id="f69c8016-ecd7-4a8e-9c56-138e7ab8d13a" class="image"><a href="fout_harvesters.jpg"><img style="width:2849px" src="fout_harvesters.jpg"/></a><figcaption>harvesters.tif  (Green shift: [14,14] Red shift [14,13])</figcaption></figure><p id="b11a6e8b-e608-4a10-937c-46dbceb0e89a" class="">
+</p></div><div id="6ae83cd9-a4b4-48b1-9f4a-f58aa5839cc3" style="width:50%" class="column"><figure id="05bbe6a5-3763-4648-9e1c-cf9e820e2718" class="image"><a href="fout_icon.jpg"><img style="width:2893px" src="fout_icon.jpg"/></a><figcaption>icon.tif  (Green shift: [14,14] Red shift [14,14])</figcaption></figure></div></div><div id="1b350dd3-57a3-431f-a511-029990f82a68" class="column-list"><div id="12875e20-6669-4001-ab0d-edc4d29603f3" style="width:50%" class="column"><figure id="33ec38db-a670-4548-b946-bcd9260fc1b2" class="image"><a href="fout_lady.jpg"><img style="width:2909px" src="fout_lady.jpg"/></a><figcaption>lady.tif  (Green shift: [14,8] Red shift [14,-15])</figcaption></figure></div><div id="15e83726-06e3-4a1c-b4fa-31e957386e1e" style="width:50%" class="column"><figure id="71189669-1608-4a30-9da9-f78fccfa73da" class="image"><a href="fout_melons.jpg"><img style="width:2916px" src="fout_melons.jpg"/></a><figcaption>melons.tif  (Green shift: [14,2] Red shift [14,0])</figcaption></figure></div></div><div id="3a832fed-3905-4eef-8a89-411c024e3591" class="column-list"><div id="822c8fb7-5fa3-4dde-bd47-9ccf9a1fe35b" style="width:50%" class="column"><figure id="d145b111-ae53-4c36-a0b6-99f3c72babc5" class="image"><a href="fout_onion_church.jpg"><img style="width:2923px" src="fout_onion_church.jpg"/></a><figcaption>onion_church.tif  (Green shift: [14,-11] Red shift [14,-15])</figcaption></figure></div><div id="9d824f85-9277-4647-a5d2-b42bbca9d01a" style="width:50%" class="column"><figure id="64cc9cab-bf4f-49d9-b13e-1c37a73e5266" class="image"><a href="fout_sculpture.jpg"><img style="width:2938px" src="fout_sculpture.jpg"/></a><figcaption>sculpture.tif  (Green shift: [14,14] Red shift [2,14])</figcaption></figure></div></div><div id="1ca15d72-d0eb-4006-a32e-97ea6b48dab2" class="column-list"><div id="869ba677-a281-469a-855e-19611f88cd21" style="width:50%" class="column"><figure id="6f39914b-b593-41ca-9c7b-7f77bfbc4d00" class="image"><a href="fout_self_portrait.jpg"><img style="width:2946px" src="fout_self_portrait.jpg"/></a><figcaption>self_portrait.tif  (Green shift: [14,14] Red shift [2,14])</figcaption></figure></div><div id="53b2b6d9-97c9-4b4a-a4e1-b177a7eb8ce8" style="width:50%" class="column"><figure id="7a46d006-9cf1-4150-ae78-6ad0fdd9152a" class="image"><a href="fout_three_generations.jpg"><img style="width:2872px" src="fout_three_generations.jpg"/></a><figcaption>three_generations.tif  (Green shift: [14,12] Red shift [14,8])</figcaption></figure></div></div><figure id="cf52a2b2-447d-46e5-a9cd-4aff028af1e1" class="image"><a href="fout_train.jpg"><img style="width:384px" src="fout_train.jpg"/></a><figcaption>train.tif  (Green shift: [14,8] Red shift [14,0])</figcaption></figure><h2 id="42a18e45-da51-4d69-9d92-7355872a328d" class="">The Evolution (Image Pyramid)</h2><p id="6037b92c-fa98-47c9-9608-640dde4d6d4e" class="">As the .tifs are huge, utilized Image Pyramid methodology to downscale the given image down by a factor of 2 up to the point where the resolution was less than 32.  Used exhaustive search on the small ones and kept shifting and rescaling up by 2 as appropriate to take less time and have less area to search for on the larger resolutions (from OH).  Still takes quite awhile to run tho albeit not as egregious as kiwi on pizza.</p><h3 id="cbd8a73f-a99d-4b6b-a5b4-31cd127b2376" class="">Smaller .jpeg files </h3><div id="232724a6-ea92-4e1c-b300-14b20b7b6a23" class="column-list"><div id="74a0354c-0ced-435c-9fb5-290a44c103bc" style="width:50%" class="column"><figure id="b8309381-88ee-4d3d-8e7e-d0a6674e0d37" class="image"><a href="out_cathedral.jpg"><img style="width:336px" src="out_cathedral.jpg"/></a><figcaption>cathedral.jpg (Green shift: [5,2] Red shift [12,3])</figcaption></figure></div><div id="e034f398-afd8-4c1e-aee3-7c947b7461f7" style="width:50%" class="column"><figure id="bfa299ec-aff2-487e-844c-72e6d85ba49a" class="image"><a href="out_monastery.jpg"><img style="width:720px" src="out_monastery.jpg"/></a><figcaption>monastery.jpg  (Green shift: [-3,2] Red shift [3,2])</figcaption></figure></div></div><figure id="a8201433-8def-4bc2-a374-56667dd82aa1" class="image"><a href="out_tobolsk.jpg"><img style="width:336px" src="out_tobolsk.jpg"/></a><figcaption>tobolsk.jpg  (Green shift: [3,2] Red shift [6,3])</figcaption></figure><div id="38bae0bb-5ab1-4048-80b6-6c10ad1d5949" class="column-list"><div id="b06f32b1-c664-43b2-a7b0-91b362a3eea1" style="width:50%" class="column"><h3 id="bf315242-08a7-423f-942a-bfb365584a4f" class="">Larger .tif files</h3></div><div id="c01c1833-8684-4384-8ed1-db8aa2296c0e" style="width:50%" class="column"><p id="b06421b2-2c04-4920-848c-fd78770f37b4" class="">
+</p></div></div><div id="2078462b-1ad3-42f5-a5da-4527e49a9acf" class="column-list"><div id="eee97f95-f373-4a78-be18-ebe8c2e3e22a" style="width:50%" class="column"><figure id="3c8aefa2-3996-460c-8d8c-1e21e0870d6a" class="image"><a href="out_emir.jpg"><img style="width:720px" src="out_emir.jpg"/></a><figcaption>emir.tif  (Green shift: [49,24] Red shift [0,-860])</figcaption></figure><p id="312aa284-eed9-43c6-a58e-0a8716dcc85b" class="">
+</p></div><div id="3594c765-3f6b-4068-9132-62aba2dd0e6e" style="width:50%" class="column"><figure id="fc9f092b-63b0-4360-89a2-6200f3854625" class="image"><a href="out_harvesters.jpg"><img style="width:720px" src="out_harvesters.jpg"/></a><figcaption>harvesters.tif  (Green shift: [59,16] Red shift [124,13])</figcaption></figure><p id="bb8e0255-eb8e-4e99-874a-e001c4823755" class="">
+</p></div></div><div id="12136019-1621-421d-b139-82ed59dc6e8a" class="column-list"><div id="fdb01036-d684-4a1b-ba67-78a76644f4a0" style="width:50%" class="column"><figure id="cce64e31-34d4-40ea-a141-b25cd6868c3b" class="image"><a href="out_icon.jpg"><img style="width:720px" src="out_icon.jpg"/></a><figcaption>icon.tif  (Green shift: [41,17] Red shift [89,23])</figcaption></figure></div><div id="0292c2af-1a2b-4b04-961e-e749616158dd" style="width:50%" class="column"><figure id="62fc5c27-552b-46f4-8aa6-f37d2972c53b" class="image"><a href="out_lady.jpg"><img style="width:720px" src="out_lady.jpg"/></a><figcaption>lady.tif  (Green shift: [49,9] Red shift [111,11])</figcaption></figure><p id="24ab3c1e-fe3a-437f-bd75-3fdf8b81e623" class="">
+</p></div></div><div id="26084711-4920-48c9-9451-5a2824a0c081" class="column-list"><div id="2bd2ff36-ec59-4af6-a8ff-80b812761568" style="width:50%" class="column"><figure id="af0fdef7-bb2a-4901-a237-3439adc396e4" class="image"><a href="out_melons.jpg"><img style="width:720px" src="out_melons.jpg"/></a><figcaption>melons.tif  (Green shift: [82,10] Red shift [179,13])</figcaption></figure></div><div id="a3d4ce3c-adb3-4718-b8ac-7e2ce85370d6" style="width:50%" class="column"><figure id="d2e1aeda-e1ad-4a49-b301-179102ef4c36" class="image"><a href="out_church.jpg"><img style="width:720px" src="out_church.jpg"/></a><figcaption>church.tif  (Green shift: [25-4] Red shift [58,-4])</figcaption></figure></div></div><div id="1a4c02cd-5980-458c-a0e0-8fa047870af3" class="column-list"><div id="667c4574-0eca-4023-b9ff-ff549595c9bb" style="width:50%" class="column"><figure id="88fe770d-3436-4c39-be31-e0c61eed7512" class="image"><a href="out_onion_church.jpg"><img style="width:720px" src="out_onion_church.jpg"/></a><figcaption>onion_church.tif  (Green shift: [51,26] Red shift [108,36])</figcaption></figure></div><div id="a17c8d0c-1ab9-4a02-9f43-e09b756dc61f" style="width:50%" class="column"><figure id="c1b0af83-16f4-4457-9666-0d05ed1055c1" class="image"><a href="out_sculpture.jpg"><img style="width:720px" src="out_sculpture.jpg"/></a><figcaption>sculpture.tif  (Green shift: [33,-11] Red shift [140,-27])</figcaption></figure><p id="18faa0db-e52f-4fe8-bb77-d6637b029c55" class="">
+</p></div></div><div id="ff87e380-b892-4a7f-ab84-038a0b0b598c" class="column-list"><div id="131ee69f-296e-43da-840d-005c9bda6cc6" style="width:50%" class="column"><figure id="50ea8db2-970c-4dea-90d1-46e23e76ad15" class="image"><a href="out_self_portrait.jpg"><img style="width:720px" src="out_self_portrait.jpg"/></a><figcaption>self_portrait.tif  (Green shift: [78,29] Red shift [176,37])</figcaption></figure></div><div id="a51e1b86-6266-45d8-9a17-8bd5e5446744" style="width:50%" class="column"><figure id="c088c66d-a83d-4b54-a3ff-063aa4017211" class="image"><a href="out_three_generations.jpg"><img style="width:720px" src="out_three_generations.jpg"/></a><figcaption>three_generations.tif  (Green shift: [53,14] Red shift [112,11])</figcaption></figure></div></div><figure id="840dc77d-1a4c-4a99-8478-4887caeff76f" class="image"><a href="out_train.jpg"><img style="width:336px" src="out_train.jpg"/></a><figcaption>train.tif  (Green shift: [42,,5] Red shift [87,32])</figcaption></figure><h2 id="ec0fb1bc-e7c2-4496-88d1-585a3a851668" class="">Mega-Evolution (Bells and Whistles, imo whistles are better as can’t use our bodies to bell effectively tho we can whistle)</h2><p id="a100d0a4-fdaa-4021-950e-4ffe264df120" class="">Using Image Pyramid drastically improved most images to look decent tho still had some discrepancies, in particular Emir.  Used automatic cropping/edge detection with Sobel to do so. Images look better but still runs at the speed of beans.  Eliminated the side discolorations for the most part so image looks cleaner than before</p><figure class="block-color-gray_background callout" style="white-space:pre-wrap;display:flex" id="65c48e6e-83d0-4936-9f58-f49984073484"><div style="font-size:1.5em"><span class="icon">💡</span></div><div style="width:100%"><p id="e3091174-a434-413f-ac76-ddee61ff3304" class="">Between cv2 and scikit’s Sobel, elected to use scikit since way easier to use </p></div></figure><p id="f65bdbec-5c07-420f-a458-68f52430484a" class="">Emir went from having a red ghostly parasitic twin to looking like a fancy elegant regular dude and most other images got slightly less blurry</p><h3 id="55bea2d0-8bf2-4254-a4bc-01277ca2d676" class="">Smaller .jpeg files</h3><div id="0c2cdef4-440c-4a36-a9b3-e079c9a19749" class="column-list"><div id="cc90c287-fbc6-460f-8746-c4f1009aba46" style="width:50%" class="column"><figure id="78dbd0cd-1d84-4e74-a901-1ab12fb10a9e" class="image"><a href="sout_cathedral.jpg"><img style="width:288px" src="sout_cathedral.jpg"/></a><figcaption>cathedral.jpg (Green shift: [5,2] Red shift [12,3])</figcaption></figure></div><div id="38d55aa0-6886-420f-9d52-15e23803d008" style="width:50%" class="column"><figure id="e39f5f93-f8f0-47f1-9e88-97b87ddc0323" class="image"><a href="sout_monastery.jpg"><img style="width:288px" src="sout_monastery.jpg"/></a><figcaption>monastery.jpg (Green shift: [-3,2] Red shift [3,2])</figcaption></figure><p id="5c668727-8a2b-4a9e-b90c-8ee4e863c819" class="">
+</p></div></div><figure id="697c9eac-72bb-4af8-9962-260998668a67" class="image"><a href="sout_tobolsk.jpg"><img style="width:288px" src="sout_tobolsk.jpg"/></a><figcaption>tobolsk.jpg (Green shift: [3,2] Red shift [6,3])</figcaption></figure><h3 id="8662ef85-f65f-47de-8cf1-7705afc30436" class="">Larger .tif files</h3><div id="9ba96272-1fb8-487d-bb95-a6ecd7af8af8" class="column-list"><div id="de114cc5-d2f2-4ebb-a906-8ee3c54a8c4d" style="width:50%" class="column"><figure id="f29c1236-6ac2-4f55-a675-880982eb9623" class="image"><a href="sout_church.jpg"><img style="width:2810px" src="sout_church.jpg"/></a><figcaption>church.tif (Green shift: [25,4] Red shift [58,-4])</figcaption></figure><p id="6a1243c2-1494-48e0-be0c-54580849d5b2" class="">
+</p></div><div id="3e0fdef5-240e-459f-a628-1778d0c830a8" style="width:50%" class="column"><figure id="82f54b8d-2f01-4213-ae47-e0bd6562b942" class="image"><a href="sout_emir.jpg"><img style="width:2862px" src="sout_emir.jpg"/></a><figcaption>emir.tif (Green shift: [49,23] Red shift [107,40])</figcaption></figure></div></div><div id="d0c3ebe3-1871-48be-89ac-46dc74350b24" class="column-list"><div id="61033804-6ee2-4899-a0ac-e147da02e21a" style="width:50%" class="column"><figure id="21992b49-51f3-44b9-a0fc-357f74bc5502" class="image"><a href="sout_harvesters.jpg"><img style="width:2849px" src="sout_harvesters.jpg"/></a><figcaption>harvesters.tif (Green shift: [60,17] Red shift [123,13])</figcaption></figure></div><div id="82870e87-baa5-4ade-b24c-d011bf5c6425" style="width:50%" class="column"><figure id="5f31bde7-1e26-4382-8375-10f031b8e17f" class="image"><a href="sout_icon.jpg"><img style="width:2893px" src="sout_icon.jpg"/></a><figcaption>icon.tif (Green shift: [42,17] Red shift [90,23])</figcaption></figure></div></div><div id="c33a5f96-2380-4a73-a2bd-ad9c2a1fd624" class="column-list"><div id="61abe22b-904f-42bb-a1c0-612a5bc59978" style="width:50%" class="column"><figure id="0e014cd1-100a-48ed-9f97-92636785e18d" class="image"><a href="sout_lady.jpg"><img style="width:2909px" src="sout_lady.jpg"/></a><figcaption>lady.tif (Green shift: [56,9] Red shift [119,13])</figcaption></figure></div><div id="4682e8a1-e619-4bae-9894-c6470bf8870a" style="width:50%" class="column"><figure id="2de97bca-f6f2-4b1d-99f0-ee2a2e5d1452" class="image"><a href="sout_melons.jpg"><img style="width:2916px" src="sout_melons.jpg"/></a><figcaption>melons.tif (Green shift: [80,10] Red shift [177,12])</figcaption></figure></div></div><div id="8578d2a2-c2a5-419a-9c68-b53485686de2" class="column-list"><div id="ec59913f-0fee-44f9-be1a-170398d648f8" style="width:50%" class="column"><figure id="049afb72-fb86-46f9-af25-bcfee7eed222" class="image"><a href="sout_onion_church.jpg"><img style="width:2923px" src="sout_onion_church.jpg"/></a><figcaption>onion_church.tif (Green shift: [51,26] Red shift [108,36])</figcaption></figure></div><div id="b5500ce2-d3c7-450d-a15c-09fbacab7585" style="width:50%" class="column"><figure id="d64afb18-d892-4acf-a636-80b3327b795d" class="image"><a href="sout_sculpture.jpg"><img style="width:2938px" src="sout_sculpture.jpg"/></a><figcaption>sculpture.tif (Green shift: [33,-11] Red shift [140,-26])</figcaption></figure></div></div><div id="e5f13c2e-8bcc-44f3-846a-f48c34d895e0" class="column-list"><div id="10085858-9c3e-443f-b2e5-1142a160edc4" style="width:50%" class="column"><figure id="f32475a3-721a-4045-aa48-bbd4d1470f97" class="image"><a href="sout_self_portrait.jpg"><img style="width:2946px" src="sout_self_portrait.jpg"/></a><figcaption>self_portrait.tif (Green shift: [78,39] Red shift [176,37])</figcaption></figure></div><div id="d09385ff-4569-4670-8aac-8d2df5e0fc00" style="width:50%" class="column"><figure id="e4e70794-d6fc-4bb6-820d-cfe152a99cbd" class="image"><a href="sout_three_generations.jpg"><img style="width:2872px" src="sout_three_generations.jpg"/></a><figcaption>three_generations.tif (Green shift: [54,12] Red shift [111,9])</figcaption></figure></div></div><figure id="7cd83295-19e7-4b89-82d0-796672753ed9" class="image"><a href="sout_train.jpg"><img style="width:336px" src="sout_train.jpg"/></a><figcaption>train.tif (Green shift: [41,2] Red shift [85,29])</figcaption></figure><p id="8ddc6ff3-2a48-497e-95a3-29737f20ae57" class="">
+</p></div></article><span class="sans" style="font-size:14px;padding-top:2em"></span></body></html>
