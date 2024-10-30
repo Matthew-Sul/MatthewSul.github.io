@@ -1,0 +1,720 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"/><title>CS180 Project 4: Image Warping and Mosaic</title><style>
+/* cspell:disable-file */
+/* webkit printing magic: print all background colors */
+html {
+	-webkit-print-color-adjust: exact;
+}
+* {
+	box-sizing: border-box;
+	-webkit-print-color-adjust: exact;
+}
+
+html,
+body {
+	margin: 0;
+	padding: 0;
+}
+@media only screen {
+	body {
+		margin: 2em auto;
+		max-width: 900px;
+		color: rgb(55, 53, 47);
+	}
+}
+
+body {
+	line-height: 1.5;
+	white-space: pre-wrap;
+}
+
+a,
+a.visited {
+	color: inherit;
+	text-decoration: underline;
+}
+
+.pdf-relative-link-path {
+	font-size: 80%;
+	color: #444;
+}
+
+h1,
+h2,
+h3 {
+	letter-spacing: -0.01em;
+	line-height: 1.2;
+	font-weight: 600;
+	margin-bottom: 0;
+}
+
+.page-title {
+	font-size: 2.5rem;
+	font-weight: 700;
+	margin-top: 0;
+	margin-bottom: 0.75em;
+}
+
+h1 {
+	font-size: 1.875rem;
+	margin-top: 1.875rem;
+}
+
+h2 {
+	font-size: 1.5rem;
+	margin-top: 1.5rem;
+}
+
+h3 {
+	font-size: 1.25rem;
+	margin-top: 1.25rem;
+}
+
+.source {
+	border: 1px solid #ddd;
+	border-radius: 3px;
+	padding: 1.5em;
+	word-break: break-all;
+}
+
+.callout {
+	border-radius: 3px;
+	padding: 1rem;
+}
+
+figure {
+	margin: 1.25em 0;
+	page-break-inside: avoid;
+}
+
+figcaption {
+	opacity: 0.5;
+	font-size: 85%;
+	margin-top: 0.5em;
+}
+
+mark {
+	background-color: transparent;
+}
+
+.indented {
+	padding-left: 1.5em;
+}
+
+hr {
+	background: transparent;
+	display: block;
+	width: 100%;
+	height: 1px;
+	visibility: visible;
+	border: none;
+	border-bottom: 1px solid rgba(55, 53, 47, 0.09);
+}
+
+img {
+	max-width: 100%;
+}
+
+@media only print {
+	img {
+		max-height: 100vh;
+		object-fit: contain;
+	}
+}
+
+@page {
+	margin: 1in;
+}
+
+.collection-content {
+	font-size: 0.875rem;
+}
+
+.column-list {
+	display: flex;
+	justify-content: space-between;
+}
+
+.column {
+	padding: 0 1em;
+}
+
+.column:first-child {
+	padding-left: 0;
+}
+
+.column:last-child {
+	padding-right: 0;
+}
+
+.table_of_contents-item {
+	display: block;
+	font-size: 0.875rem;
+	line-height: 1.3;
+	padding: 0.125rem;
+}
+
+.table_of_contents-indent-1 {
+	margin-left: 1.5rem;
+}
+
+.table_of_contents-indent-2 {
+	margin-left: 3rem;
+}
+
+.table_of_contents-indent-3 {
+	margin-left: 4.5rem;
+}
+
+.table_of_contents-link {
+	text-decoration: none;
+	opacity: 0.7;
+	border-bottom: 1px solid rgba(55, 53, 47, 0.18);
+}
+
+table,
+th,
+td {
+	border: 1px solid rgba(55, 53, 47, 0.09);
+	border-collapse: collapse;
+}
+
+table {
+	border-left: none;
+	border-right: none;
+}
+
+th,
+td {
+	font-weight: normal;
+	padding: 0.25em 0.5em;
+	line-height: 1.5;
+	min-height: 1.5em;
+	text-align: left;
+}
+
+th {
+	color: rgba(55, 53, 47, 0.6);
+}
+
+ol,
+ul {
+	margin: 0;
+	margin-block-start: 0.6em;
+	margin-block-end: 0.6em;
+}
+
+li > ol:first-child,
+li > ul:first-child {
+	margin-block-start: 0.6em;
+}
+
+ul > li {
+	list-style: disc;
+}
+
+ul.to-do-list {
+	padding-inline-start: 0;
+}
+
+ul.to-do-list > li {
+	list-style: none;
+}
+
+.to-do-children-checked {
+	text-decoration: line-through;
+	opacity: 0.375;
+}
+
+ul.toggle > li {
+	list-style: none;
+}
+
+ul {
+	padding-inline-start: 1.7em;
+}
+
+ul > li {
+	padding-left: 0.1em;
+}
+
+ol {
+	padding-inline-start: 1.6em;
+}
+
+ol > li {
+	padding-left: 0.2em;
+}
+
+.mono ol {
+	padding-inline-start: 2em;
+}
+
+.mono ol > li {
+	text-indent: -0.4em;
+}
+
+.toggle {
+	padding-inline-start: 0em;
+	list-style-type: none;
+}
+
+/* Indent toggle children */
+.toggle > li > details {
+	padding-left: 1.7em;
+}
+
+.toggle > li > details > summary {
+	margin-left: -1.1em;
+}
+
+.selected-value {
+	display: inline-block;
+	padding: 0 0.5em;
+	background: rgba(206, 205, 202, 0.5);
+	border-radius: 3px;
+	margin-right: 0.5em;
+	margin-top: 0.3em;
+	margin-bottom: 0.3em;
+	white-space: nowrap;
+}
+
+.collection-title {
+	display: inline-block;
+	margin-right: 1em;
+}
+
+.page-description {
+    margin-bottom: 2em;
+}
+
+.simple-table {
+	margin-top: 1em;
+	font-size: 0.875rem;
+	empty-cells: show;
+}
+.simple-table td {
+	height: 29px;
+	min-width: 120px;
+}
+
+.simple-table th {
+	height: 29px;
+	min-width: 120px;
+}
+
+.simple-table-header-color {
+	background: rgb(247, 246, 243);
+	color: black;
+}
+.simple-table-header {
+	font-weight: 500;
+}
+
+time {
+	opacity: 0.5;
+}
+
+.icon {
+	display: inline-block;
+	max-width: 1.2em;
+	max-height: 1.2em;
+	text-decoration: none;
+	vertical-align: text-bottom;
+	margin-right: 0.5em;
+}
+
+img.icon {
+	border-radius: 3px;
+}
+
+.user-icon {
+	width: 1.5em;
+	height: 1.5em;
+	border-radius: 100%;
+	margin-right: 0.5rem;
+}
+
+.user-icon-inner {
+	font-size: 0.8em;
+}
+
+.text-icon {
+	border: 1px solid #000;
+	text-align: center;
+}
+
+.page-cover-image {
+	display: block;
+	object-fit: cover;
+	width: 100%;
+	max-height: 30vh;
+}
+
+.page-header-icon {
+	font-size: 3rem;
+	margin-bottom: 1rem;
+}
+
+.page-header-icon-with-cover {
+	margin-top: -0.72em;
+	margin-left: 0.07em;
+}
+
+.page-header-icon img {
+	border-radius: 3px;
+}
+
+.link-to-page {
+	margin: 1em 0;
+	padding: 0;
+	border: none;
+	font-weight: 500;
+}
+
+p > .user {
+	opacity: 0.5;
+}
+
+td > .user,
+td > time {
+	white-space: nowrap;
+}
+
+input[type="checkbox"] {
+	transform: scale(1.5);
+	margin-right: 0.6em;
+	vertical-align: middle;
+}
+
+p {
+	margin-top: 0.5em;
+	margin-bottom: 0.5em;
+}
+
+.image {
+	border: none;
+	margin: 1.5em 0;
+	padding: 0;
+	border-radius: 0;
+	text-align: center;
+}
+
+.code,
+code {
+	background: rgba(135, 131, 120, 0.15);
+	border-radius: 3px;
+	padding: 0.2em 0.4em;
+	border-radius: 3px;
+	font-size: 85%;
+	tab-size: 2;
+}
+
+code {
+	color: #eb5757;
+}
+
+.code {
+	padding: 1.5em 1em;
+}
+
+.code-wrap {
+	white-space: pre-wrap;
+	word-break: break-all;
+}
+
+.code > code {
+	background: none;
+	padding: 0;
+	font-size: 100%;
+	color: inherit;
+}
+
+blockquote {
+	font-size: 1.25em;
+	margin: 1em 0;
+	padding-left: 1em;
+	border-left: 3px solid rgb(55, 53, 47);
+}
+
+.bookmark {
+	text-decoration: none;
+	max-height: 8em;
+	padding: 0;
+	display: flex;
+	width: 100%;
+	align-items: stretch;
+}
+
+.bookmark-title {
+	font-size: 0.85em;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	height: 1.75em;
+	white-space: nowrap;
+}
+
+.bookmark-text {
+	display: flex;
+	flex-direction: column;
+}
+
+.bookmark-info {
+	flex: 4 1 180px;
+	padding: 12px 14px 14px;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+}
+
+.bookmark-image {
+	width: 33%;
+	flex: 1 1 180px;
+	display: block;
+	position: relative;
+	object-fit: cover;
+	border-radius: 1px;
+}
+
+.bookmark-description {
+	color: rgba(55, 53, 47, 0.6);
+	font-size: 0.75em;
+	overflow: hidden;
+	max-height: 4.5em;
+	word-break: break-word;
+}
+
+.bookmark-href {
+	font-size: 0.75em;
+	margin-top: 0.25em;
+}
+
+.sans { font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol"; }
+.code { font-family: "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace; }
+.serif { font-family: Lyon-Text, Georgia, ui-serif, serif; }
+.mono { font-family: iawriter-mono, Nitti, Menlo, Courier, monospace; }
+.pdf .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK JP'; }
+.pdf:lang(zh-CN) .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK SC'; }
+.pdf:lang(zh-TW) .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK TC'; }
+.pdf:lang(ko-KR) .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK KR'; }
+.pdf .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK JP'; }
+.pdf:lang(zh-CN) .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK SC'; }
+.pdf:lang(zh-TW) .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK TC'; }
+.pdf:lang(ko-KR) .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK KR'; }
+.pdf .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK JP'; }
+.pdf:lang(zh-CN) .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK SC'; }
+.pdf:lang(zh-TW) .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK TC'; }
+.pdf:lang(ko-KR) .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK KR'; }
+.pdf .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK JP'; }
+.pdf:lang(zh-CN) .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK SC'; }
+.pdf:lang(zh-TW) .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK TC'; }
+.pdf:lang(ko-KR) .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK KR'; }
+.highlight-default {
+	color: rgba(55, 53, 47, 1);
+}
+.highlight-gray {
+	color: rgba(120, 119, 116, 1);
+	fill: rgba(120, 119, 116, 1);
+}
+.highlight-brown {
+	color: rgba(159, 107, 83, 1);
+	fill: rgba(159, 107, 83, 1);
+}
+.highlight-orange {
+	color: rgba(217, 115, 13, 1);
+	fill: rgba(217, 115, 13, 1);
+}
+.highlight-yellow {
+	color: rgba(203, 145, 47, 1);
+	fill: rgba(203, 145, 47, 1);
+}
+.highlight-teal {
+	color: rgba(68, 131, 97, 1);
+	fill: rgba(68, 131, 97, 1);
+}
+.highlight-blue {
+	color: rgba(51, 126, 169, 1);
+	fill: rgba(51, 126, 169, 1);
+}
+.highlight-purple {
+	color: rgba(144, 101, 176, 1);
+	fill: rgba(144, 101, 176, 1);
+}
+.highlight-pink {
+	color: rgba(193, 76, 138, 1);
+	fill: rgba(193, 76, 138, 1);
+}
+.highlight-red {
+	color: rgba(212, 76, 71, 1);
+	fill: rgba(212, 76, 71, 1);
+}
+.highlight-default_background {
+	color: rgba(55, 53, 47, 1);
+}
+.highlight-gray_background {
+	background: rgba(241, 241, 239, 1);
+}
+.highlight-brown_background {
+	background: rgba(244, 238, 238, 1);
+}
+.highlight-orange_background {
+	background: rgba(251, 236, 221, 1);
+}
+.highlight-yellow_background {
+	background: rgba(251, 243, 219, 1);
+}
+.highlight-teal_background {
+	background: rgba(237, 243, 236, 1);
+}
+.highlight-blue_background {
+	background: rgba(231, 243, 248, 1);
+}
+.highlight-purple_background {
+	background: rgba(244, 240, 247, 0.8);
+}
+.highlight-pink_background {
+	background: rgba(249, 238, 243, 0.8);
+}
+.highlight-red_background {
+	background: rgba(253, 235, 236, 1);
+}
+.block-color-default {
+	color: inherit;
+	fill: inherit;
+}
+.block-color-gray {
+	color: rgba(120, 119, 116, 1);
+	fill: rgba(120, 119, 116, 1);
+}
+.block-color-brown {
+	color: rgba(159, 107, 83, 1);
+	fill: rgba(159, 107, 83, 1);
+}
+.block-color-orange {
+	color: rgba(217, 115, 13, 1);
+	fill: rgba(217, 115, 13, 1);
+}
+.block-color-yellow {
+	color: rgba(203, 145, 47, 1);
+	fill: rgba(203, 145, 47, 1);
+}
+.block-color-teal {
+	color: rgba(68, 131, 97, 1);
+	fill: rgba(68, 131, 97, 1);
+}
+.block-color-blue {
+	color: rgba(51, 126, 169, 1);
+	fill: rgba(51, 126, 169, 1);
+}
+.block-color-purple {
+	color: rgba(144, 101, 176, 1);
+	fill: rgba(144, 101, 176, 1);
+}
+.block-color-pink {
+	color: rgba(193, 76, 138, 1);
+	fill: rgba(193, 76, 138, 1);
+}
+.block-color-red {
+	color: rgba(212, 76, 71, 1);
+	fill: rgba(212, 76, 71, 1);
+}
+.block-color-default_background {
+	color: inherit;
+	fill: inherit;
+}
+.block-color-gray_background {
+	background: rgba(241, 241, 239, 1);
+}
+.block-color-brown_background {
+	background: rgba(244, 238, 238, 1);
+}
+.block-color-orange_background {
+	background: rgba(251, 236, 221, 1);
+}
+.block-color-yellow_background {
+	background: rgba(251, 243, 219, 1);
+}
+.block-color-teal_background {
+	background: rgba(237, 243, 236, 1);
+}
+.block-color-blue_background {
+	background: rgba(231, 243, 248, 1);
+}
+.block-color-purple_background {
+	background: rgba(244, 240, 247, 0.8);
+}
+.block-color-pink_background {
+	background: rgba(249, 238, 243, 0.8);
+}
+.block-color-red_background {
+	background: rgba(253, 235, 236, 1);
+}
+.select-value-color-uiBlue { background-color: rgba(35, 131, 226, .07); }
+.select-value-color-pink { background-color: rgba(245, 224, 233, 1); }
+.select-value-color-purple { background-color: rgba(232, 222, 238, 1); }
+.select-value-color-green { background-color: rgba(219, 237, 219, 1); }
+.select-value-color-gray { background-color: rgba(227, 226, 224, 1); }
+.select-value-color-transparentGray { background-color: rgba(227, 226, 224, 0); }
+.select-value-color-translucentGray { background-color: rgba(0, 0, 0, 0.06); }
+.select-value-color-orange { background-color: rgba(250, 222, 201, 1); }
+.select-value-color-brown { background-color: rgba(238, 224, 218, 1); }
+.select-value-color-red { background-color: rgba(255, 226, 221, 1); }
+.select-value-color-yellow { background-color: rgba(253, 236, 200, 1); }
+.select-value-color-blue { background-color: rgba(211, 229, 239, 1); }
+.select-value-color-pageGlass { background-color: undefined; }
+.select-value-color-washGlass { background-color: undefined; }
+
+.checkbox {
+	display: inline-flex;
+	vertical-align: text-bottom;
+	width: 16;
+	height: 16;
+	background-size: 16px;
+	margin-left: 2px;
+	margin-right: 5px;
+}
+
+.checkbox-on {
+	background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%2216%22%20height%3D%2216%22%20viewBox%3D%220%200%2016%2016%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%3Crect%20width%3D%2216%22%20height%3D%2216%22%20fill%3D%22%2358A9D7%22%2F%3E%0A%3Cpath%20d%3D%22M6.71429%2012.2852L14%204.9995L12.7143%203.71436L6.71429%209.71378L3.28571%206.2831L2%207.57092L6.71429%2012.2852Z%22%20fill%3D%22white%22%2F%3E%0A%3C%2Fsvg%3E");
+}
+
+.checkbox-off {
+	background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%2216%22%20height%3D%2216%22%20viewBox%3D%220%200%2016%2016%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%3Crect%20x%3D%220.75%22%20y%3D%220.75%22%20width%3D%2214.5%22%20height%3D%2214.5%22%20fill%3D%22white%22%20stroke%3D%22%2336352F%22%20stroke-width%3D%221.5%22%2F%3E%0A%3C%2Fsvg%3E");
+}
+	
+</style></head><body><article id="125a0f9a-6eb0-80db-b86a-da9c23270eb9" class="page sans"><header><h1 class="page-title">CS180 Project 4: Image Warping and Mosaic</h1><p class="page-description"></p></header><div class="page-body"><p id="125a0f9a-6eb0-80ab-aea6-d40e61ebc611" class="">Matthew Sulistijowadi, Rectification’s greatest rival</p><p id="125a0f9a-6eb0-8050-8c52-d2907fed34d2" class="">
+</p><h1 id="125a0f9a-6eb0-805e-9c26-e6e04cf32569" class="">Overview</h1><p id="125a0f9a-6eb0-803c-8643-c039bf77f4ca" class="">Split into 2 parts of 4a being image warping and mosaicing and 4b beign about feature matching and autostitching. Process is to get pictures for rectifying and mosaicing, retrieving homographies, warping images. Rectifying a single image (repeat with another img), then creating 3 separate mosaics. </p><p id="12fa0f9a-6eb0-805e-aa88-fdb0941fd08c" class="">
+</p><h1 id="12fa0f9a-6eb0-8041-b270-e1927b31bc7c" class="">Part A: <strong>IMAGE WARPING and MOSAICING</strong></h1><h1 id="125a0f9a-6eb0-802d-bb8b-ce13be40f916" class="">Part 1: Photo Capturing (and Correspondences)</h1><p id="125a0f9a-6eb0-801b-a041-f0bf92455af0" class="">Used an iPhone 11 to capture all of my images. had to make sure the imgs had the same center of projections meaning when rotating, I rotate along the Rotation of Axis of the actual camera vs my body or even somewhere on the phone not vertically aligned with the camera. Doing so would give unideal and improper results of capturing different parts of the wavelengths. Need to make sure have overlap so can match points easier for correspondences when setting the points. Also should keep it stationary so can minimize movement to avoid confusion in code and setting points for correspondences </p><p id="125a0f9a-6eb0-80fe-b10a-cc134917cb78" class="">
+</p><p id="125a0f9a-6eb0-80de-93d3-d5fee9d3e854" class="">Used the tool from proj3 to get the correspondences of the images, loading the json file for my code. Homographies for rectification used 4 points while used around 10-20 for the mosaics. </p><p id="126a0f9a-6eb0-8049-90a0-e9aa6b42a0af" class="">
+</p><p id="125a0f9a-6eb0-8052-9cd0-ef573bfabef6" class="">Rectification pics (picture of Serial Designation V along with Mikasa Wall Scroll)</p><div id="126a0f9a-6eb0-80ca-914f-cd2cf6d3eeaa" class="column-list"><div id="126a0f9a-6eb0-80ad-9b41-dc712485cd5f" style="width:50%" class="column"><figure id="126a0f9a-6eb0-8066-b351-fe2de43a63bc" class="image"><a href="v.jpg"><img style="width:330.9921875px" src="v.jpg"/></a></figure></div><div id="126a0f9a-6eb0-80d2-aac5-fb5c52b7ee5f" style="width:50%" class="column"><figure id="126a0f9a-6eb0-80a2-9f57-fd90725e2e61" class="image"><a href="mikasa.jpg"><img style="width:708px" src="mikasa.jpg"/></a></figure></div></div><p id="126a0f9a-6eb0-80d4-ac59-d04046200eea" class="">Mosaic Pics (BWW, Campanile from Foothill alcove and Mulford)</p><div id="126a0f9a-6eb0-80c9-ac07-c4ae909143d2" class="column-list"><div id="126a0f9a-6eb0-809a-82d0-e0be00cb02fd" style="width:50%" class="column"><figure id="126a0f9a-6eb0-80d9-9a95-e0bcaee216ca" class="image"><a href="bwwf1.jpg"><img style="width:331px" src="bwwf1.jpg"/></a></figure></div><div id="126a0f9a-6eb0-8080-a177-f9b04c554bba" style="width:50%" class="column"><figure id="126a0f9a-6eb0-80d5-8620-f1ad25105dd1" class="image"><a href="bwwf2.jpg"><img style="width:331px" src="bwwf2.jpg"/></a></figure></div></div><div id="126a0f9a-6eb0-80cd-a583-d243e0ebbc04" class="column-list"><div id="126a0f9a-6eb0-8076-bc18-f2c3b15d1fd7" style="width:50%" class="column"><figure id="126a0f9a-6eb0-80a9-a35e-f7b99b9f081a" class="image"><a href="fh_n1.jpg"><img style="width:331px" src="fh_n1.jpg"/></a></figure></div><div id="126a0f9a-6eb0-808c-aca8-fe42095aceb8" style="width:50%" class="column"><figure id="126a0f9a-6eb0-80cc-885a-d2ad5058de03" class="image"><a href="fh_n2.jpg"><img style="width:331px" src="fh_n2.jpg"/></a></figure></div></div><div id="126a0f9a-6eb0-8044-95ee-d2583ad0cda4" class="column-list"><div id="126a0f9a-6eb0-8069-b6de-f94a15d3f386" style="width:50%" class="column"><figure id="126a0f9a-6eb0-80f2-ab4e-d6a399c3d3c9" class="image"><a href="mf.jpg"><img style="width:708px" src="mf.jpg"/></a></figure></div><div id="126a0f9a-6eb0-8076-92ef-c2b821e62fde" style="width:50%" class="column"><figure id="126a0f9a-6eb0-80cb-b5b8-d9e9d96dffe2" class="image"><a href="mf2.jpg"><img style="width:708px" src="mf2.jpg"/></a></figure></div></div><p id="126a0f9a-6eb0-8087-b3c5-f0754fb909fd" class="">
+</p><p id="126a0f9a-6eb0-8093-98aa-ec20c060ab8a" class="">
+</p><h1 id="125a0f9a-6eb0-803b-8ad1-c8ef55d31791" class="">Part 2: Homographies</h1><p id="125a0f9a-6eb0-80d1-baae-df7a9e38cf05" class="">To warp images to one another, need to compute the homography matrix, 3x3 with 8 DOF. Want to map the points p from the input to p’ from the output. </p><figure id="126a0f9a-6eb0-800a-9a53-efba3c6c47fe" class="image"><a href="2013ec68-74c3-49cb-ae34-d2a202a549fc.png"><img style="width:708px" src="2013ec68-74c3-49cb-ae34-d2a202a549fc.png"/></a></figure><figure id="126a0f9a-6eb0-80d5-9811-ff6c92b9de40" class="image"><a href="cfde105d-55a9-4407-ab6b-e0b87ad7fb40.png"><img style="width:708px" src="cfde105d-55a9-4407-ab6b-e0b87ad7fb40.png"/></a><figcaption>n is the total amount of homog coor pairs in the source and destination image. </figcaption></figure><p id="125a0f9a-6eb0-80a6-9660-f9090730f073" class="">
+</p><p id="125a0f9a-6eb0-80f9-8833-e77fd7c7970e" class="">Once we have our equation in the form of Ax = b, can use least squares to solve for it. Our x is the column with a to h, manually construct the 3x3 matrix in the top left and that’s the Homography. Final call would be H = computeH(image1_pts, image2_pts)</p><p id="125a0f9a-6eb0-80a6-a39f-cba888ec1d0a" class="">
+</p><p id="125a0f9a-6eb0-8017-826d-f3ccad8ef8e8" class="">
+</p><h1 id="125a0f9a-6eb0-80d9-a3c6-eb4040685583" class="">Part 3+4: Warp Images + Rectification</h1><p id="125a0f9a-6eb0-80fe-bde1-f85c67e4dbdd" class="">Created a function using recently gotten H to warp [warpImage(im,H)]. Given the homography, this allows for warping an image however I want given I provide the proper H. </p><p id="126a0f9a-6eb0-8023-82a8-d5093428cbff" class="">Would start of getting H inverse, finding the size of the warped image by getting (x,y,1) coordinates of the src_img corners. To get destination, do H @ corners (corners being 3x4 shape) and normalize by dividing (wx,wy,w) by w to get (x,y,1). Grab the minimum and maximum x and y coors to get bounding box of the final image. Once the (x,y,1) coords gotten, do a similar step to proj3 by doing </p><p id="126a0f9a-6eb0-80f6-a4a2-d023652724c4" class="">H@destination_pts, normalize again (this time normally vs by w) and used scipy.interpolate.griddata to grab color vals of pixels to yeet on the final image. </p><p id="125a0f9a-6eb0-8098-bde5-f640f0f99f4e" class="">
+</p><p id="125a0f9a-6eb0-8068-917f-ed253a97b330" class="">Rectification differs from the Image Mosaic (generally) as would only need 4 points for both correspondences of the image and manually set my own rectangle (vs using 2nd image points for mosaic). The result would be if I stared at my image from above vs from the side at an angle. </p><p id="126a0f9a-6eb0-80c0-8082-d6f102a25274" class="">
+</p><p id="126a0f9a-6eb0-8059-8d0d-ecb2bed13e26" class="">
+</p><p id="126a0f9a-6eb0-8078-90b5-f29e96b603cf" class="">Red Points are Source Points and Blue points are the Destination points</p><div id="126a0f9a-6eb0-8069-8066-c2e6ba22f583" class="column-list"><div id="126a0f9a-6eb0-800b-b24c-f1fcb4bdc901" style="width:50%" class="column"><figure id="126a0f9a-6eb0-80b4-bbc3-d176bca0fe66" class="image"><a href="vpoints.jpg"><img style="width:330.9921875px" src="vpoints.jpg"/></a></figure></div><div id="126a0f9a-6eb0-8046-ad35-d1d2496ac373" style="width:50%" class="column"><figure id="126a0f9a-6eb0-80ba-a5d9-ca87da6ec8cb" class="image"><a href="mikpoints.jpg"><img style="width:330.9921875px" src="mikpoints.jpg"/></a></figure></div></div><div id="126a0f9a-6eb0-8083-aaf5-d2b495086fb9" class="column-list"><div id="126a0f9a-6eb0-80b3-8fcd-e9e55ff21ff3" style="width:50%" class="column"><figure id="126a0f9a-6eb0-80f8-8a7e-e96030e26ca0" class="image"><a href="rect_v.jpg"><img style="width:707.9921875px" src="rect_v.jpg"/></a></figure></div><div id="126a0f9a-6eb0-8036-8227-dd7dd9de5df2" style="width:50%" class="column"><figure id="126a0f9a-6eb0-8020-9390-ef06ac32a200" class="image"><a href="rect_mikasa.jpg"><img style="width:330.9921875px" src="rect_mikasa.jpg"/></a></figure></div></div><p id="126a0f9a-6eb0-8074-9179-fe6d7dce9c22" class="">Kept the raw results for transparency but also put crop versions to remove some of the black (but keeping a lot of the originals above</p><div id="126a0f9a-6eb0-80bb-9085-cf9a8da8c625" class="column-list"><div id="126a0f9a-6eb0-802e-8666-c4d04920ee3a" style="width:50%" class="column"><figure id="126a0f9a-6eb0-80d1-9592-e8e4ec4ac3f2" class="image"><a href="cropv.jpg"><img style="width:330.9921875px" src="cropv.jpg"/></a></figure></div><div id="126a0f9a-6eb0-8072-8d97-d2d6fbc0ef3a" style="width:50%" class="column"><figure id="126a0f9a-6eb0-8043-8083-cc20fa73f070" class="image"><a href="cropmikasa.jpg"><img style="width:330.9921875px" src="cropmikasa.jpg"/></a></figure></div></div><p id="125a0f9a-6eb0-806f-a531-d1b6586fcc0c" class="">The wall scroll is not perfectly straight/direct view due to the scroll not being completely level to the wall from hanging position and fan on other side of room waving it a little (can notice the shadow on the right side being fairly large). </p><h1 id="125a0f9a-6eb0-8011-9599-c64c63b5742d" class="">Part 5: Mosaic Blending</h1><p id="125a0f9a-6eb0-803f-a066-e060fce4fde3" class="">Would start by warping one image into the other image and then can blend them together to get a larger more comprehensive mosaic. Here the image2pts for computeH would be the points of the 2nd image correspondences vs just the manually set rectangle from Rectification. Reuse proj2 blending code, primarily the mask creation to blend images </p><p id="126a0f9a-6eb0-8088-8525-ff2f8f0bb2f1" class="">
+</p><p id="126a0f9a-6eb0-806d-9dc9-f0768d62288a" class="">Did the dumb method to start for all of them and just did an even split for a mask right down the middle as an experiment but had a lot of ghosting, found a midpoint being more accurate than a simple exact 50% of white and black pixels for the mask. </p><figure id="126a0f9a-6eb0-80aa-bcda-d62a7dfcb2b3" class="image"><a href="mask_example_1.jpg"><img style="width:707.984375px" src="mask_example_1.jpg"/></a><figcaption>example mask, looks like 50/50 but is not, gotten from midpoint of image. </figcaption></figure><p id="12fa0f9a-6eb0-8044-b86d-d3b1681867fa" class="">
+</p><h2 id="12fa0f9a-6eb0-80d6-a679-da9ac7c69aa0" class="">Mulford</h2><div id="12fa0f9a-6eb0-8000-8dda-f1b7298c624a" class="column-list"><div id="12fa0f9a-6eb0-8085-9659-f7e4e9bbf887" style="width:50%" class="column"><figure id="12fa0f9a-6eb0-800a-b561-e27fe37ea480" class="image"><a href="76a1973b-b2e8-4a0a-8b3b-fbb08a19e60e.png"><img style="width:466.16407982261643px" src="76a1973b-b2e8-4a0a-8b3b-fbb08a19e60e.png"/></a><figcaption>Warp Im1</figcaption></figure><figure id="12fa0f9a-6eb0-802d-8e45-ff3a95a4afee" class="image"><a href="mf_mask1.jpg"><img style="width:330.984375px" src="mf_mask1.jpg"/></a><figcaption>Mask Left</figcaption></figure><figure id="12fa0f9a-6eb0-8093-95ba-f820b6bd5eb8" class="image"><a href="dhumbmethod.jpg"><img style="width:330.96875px" src="dhumbmethod.jpg"/></a><figcaption>Mosaic Dumb Method</figcaption></figure></div><div id="12fa0f9a-6eb0-8006-a561-fea2c5fc2e37" style="width:50%" class="column"><figure id="12fa0f9a-6eb0-8011-9540-d60cf388c53e" class="image"><a href="mf2_warp.jpg"><img style="width:331px" src="mf2_warp.jpg"/></a><figcaption>Warp Im2</figcaption></figure><figure id="12fa0f9a-6eb0-8062-9e72-ec29c349dfba" class="image"><a href="mf_mask2.jpg"><img style="width:330.984375px" src="mf_mask2.jpg"/></a><figcaption>Mask Right</figcaption></figure><figure id="12fa0f9a-6eb0-803e-a548-fcb1f3385569" class="image"><a href="mf_done.jpg"><img style="width:708px" src="mf_done.jpg"/></a><figcaption>Mosaic Image Blending + Distance Transform</figcaption></figure></div></div><h2 id="12fa0f9a-6eb0-802b-966b-dfaacc0c39d4" class="">Campanile </h2><div id="12fa0f9a-6eb0-80d8-9902-cdf97fe04eb0" class="column-list"><div id="12fa0f9a-6eb0-808d-8639-cf206e9928af" style="width:50%" class="column"><figure id="12fa0f9a-6eb0-8091-a98a-f2363bd46d70" class="image"><a href="fh1_warp.jpg"><img style="width:330.984375px" src="fh1_warp.jpg"/></a><figcaption>Warp Im1</figcaption></figure></div><div id="12fa0f9a-6eb0-800a-8f9b-d7aa65d68d7c" style="width:50%" class="column"><figure id="12fa0f9a-6eb0-8039-8617-f5599b77d6cf" class="image"><a href="fh2_warp.jpg"><img style="width:330.984375px" src="fh2_warp.jpg"/></a><figcaption>Warp Im2</figcaption></figure></div></div><div id="12fa0f9a-6eb0-806f-9680-c8ef66751c2c" class="column-list"><div id="12fa0f9a-6eb0-8090-b89c-ccde993a4327" style="width:50%" class="column"><figure id="12fa0f9a-6eb0-808f-8a12-f45907457808" class="image"><a href="fh_mask1.jpg"><img style="width:330.984375px" src="fh_mask1.jpg"/></a><figcaption>Mask Left</figcaption></figure><figure id="12fa0f9a-6eb0-806f-909f-ca798dcc8e5a" class="image"><a href="fh_dumbmethod.jpg"><img style="width:330.984375px" src="fh_dumbmethod.jpg"/></a><figcaption>Mosaic Dumb Method</figcaption></figure></div><div id="12fa0f9a-6eb0-8022-8eeb-fa06bdc4ecd4" style="width:50%" class="column"><figure id="12fa0f9a-6eb0-8060-b3c1-c804e3a1df96" class="image"><a href="fh_mask2.jpg"><img style="width:330.984375px" src="fh_mask2.jpg"/></a><figcaption>Mask Right</figcaption></figure><figure id="12fa0f9a-6eb0-80fe-89f1-cfda1ef79360" class="image"><a href="fh_done.jpg"><img style="width:330.984375px" src="fh_done.jpg"/></a><figcaption>Mosaic Image Blending + Distance Transform</figcaption></figure></div></div><h2 id="12fa0f9a-6eb0-80a0-b28e-f69aef1460e2" class="">BWW</h2><div id="12fa0f9a-6eb0-80f5-9b06-f6589f400d0b" class="column-list"><div id="12fa0f9a-6eb0-802a-a100-db0ac492a03c" style="width:50%" class="column"><figure id="12fa0f9a-6eb0-80e8-8a54-d0f077985b4d" class="image"><a href="bwwf1_warp.jpg"><img style="width:331px" src="bwwf1_warp.jpg"/></a><figcaption>Warp im1</figcaption></figure><figure id="12fa0f9a-6eb0-8018-9476-d050e1b532bc" class="image"><a href="bww_mask1.jpg"><img style="width:658px" src="bww_mask1.jpg"/></a><figcaption>Mask Left</figcaption></figure></div><div id="12fa0f9a-6eb0-804d-b711-dd58a008f79c" style="width:50%" class="column"><figure id="12fa0f9a-6eb0-8087-aaea-cf85971117de" class="image"><a href="bwwf2_warp.jpg"><img style="width:330.9921875px" src="bwwf2_warp.jpg"/></a><figcaption>Warp Im2</figcaption></figure><figure id="12fa0f9a-6eb0-80f1-996f-c7e20f68d92a" class="image"><a href="bww_warp2.jpg"><img style="width:660px" src="bww_warp2.jpg"/></a><figcaption>Mask Right</figcaption></figure></div></div><div id="12fa0f9a-6eb0-803d-9ea3-dcd5d6b360b2" class="column-list"><div id="12fa0f9a-6eb0-8031-8762-dc499a78f111" style="width:50%" class="column"><figure id="12fa0f9a-6eb0-806c-ab0c-e8262c520eb7" class="image"><a href="bww_dumbmethod.jpg"><img style="width:660px" src="bww_dumbmethod.jpg"/></a><figcaption>Mosaic dumb method</figcaption></figure><p id="12fa0f9a-6eb0-80d4-be40-f5d4663f000c" class="">
+</p></div><div id="12fa0f9a-6eb0-807a-9e7c-d81454bfea64" style="width:50%" class="column"><figure id="12fa0f9a-6eb0-801b-af54-e5972c687383" class="image"><a href="bww_done.jpg"><img style="width:762px" src="bww_done.jpg"/></a><figcaption>Mosaic Image Blending + Distance Transform</figcaption></figure><p id="12fa0f9a-6eb0-800a-b2c7-f2702aa1373e" class="">
+</p><p id="12fa0f9a-6eb0-8070-a3ff-ed2af6a15c94" class="">
+</p></div></div><p id="126a0f9a-6eb0-80cd-bad8-e162e51400d3" class="">Got advice from past website, OH and peers to try and use Distance Transforming in addition to the original blending (from proj2) to eliminate the black overlap in final images (for the most part). Checks if the the distance transform is greater from left or right and assign the pixels in the mask accordingly to get 2 opposite masks which will be used in the Laplacian blending step. </p><p id="12fa0f9a-6eb0-80d9-98c6-e7d203fee6d6" class="">
+</p><p id="12fa0f9a-6eb0-8066-96ef-fdcf7cf80f26" class="">Using white background to highlight the black present from time without distance transform (tho the Doe + Campanile was fairly unaffected)</p><figure id="12fa0f9a-6eb0-8096-8b28-eb92e83b50a0" class="image"><a href="Blend_of_mulford.jpg"><img style="width:707.984375px" src="Blend_of_mulford.jpg"/></a></figure><figure id="12fa0f9a-6eb0-8087-968b-c02ba11aa3b5" class="image"><a href="Blend_of_foothill_dusk.jpg"><img style="width:567px" src="Blend_of_foothill_dusk.jpg"/></a></figure><figure id="12fa0f9a-6eb0-80b0-ac71-d50308e7bd8e" class="image"><a href="Blend_of_doe.jpg"><img style="width:707.984375px" src="Blend_of_doe.jpg"/></a><figcaption>old result of being scammed by the sun so had to replace image </figcaption></figure><p id="12fa0f9a-6eb0-80cf-95bb-cb5cbf1c7135" class="">
+</p><p id="12fa0f9a-6eb0-8014-8c86-ede7c24b3a39" class="">
+</p><p id="12fa0f9a-6eb0-8072-b625-fcf5ec38fb0f" class="">
+</p><p id="12fa0f9a-6eb0-802f-9f98-c069e8ec881c" class="">
+</p><h1 id="12fa0f9a-6eb0-80e7-8b8e-c39432f897f3" class="">Part B - <strong>FEATURE MATCHING for AUTOSTITCHING</strong></h1><p id="12fa0f9a-6eb0-80f8-a569-fbe7a6881f04" class="">Used the same images in both parts A and B.</p><h1 id="12fa0f9a-6eb0-8016-bf37-f4783b43a89c" class="">Part 1: Detecting Corner Features in an Image</h1><p id="12fa0f9a-6eb0-8004-a024-e443f7de75c7" class="">Use the given Harris Interest Point Detector (+ dist2 function) to do corner detection on images. Follow the process and ideas of the <a href="https://inst.eecs.berkeley.edu/~cs180/fa24/hw/proj4/Papers/MOPS.pdf">“Multi-Image Matching using Multi-Scale Oriented Patches” by Brown et al</a> paper. After getting all of the Harris corners (the images bum-rushed with red), use Adaptive Non-Maximal Suppression (ANMS) to leave us with the points that stand out the most. We would then use these selected points to do feature descripting, matching and later on RANSAC. </p><p id="12fa0f9a-6eb0-801e-8d42-c7e75e37f14b" class="">
+</p><h2 id="12fa0f9a-6eb0-8082-9e04-dc78f6e6a720" class="">Mulford</h2><div id="12fa0f9a-6eb0-8069-b6f0-cde16fdd5742" class="column-list"><div id="12fa0f9a-6eb0-80c4-96cb-ed49dca6e780" style="width:50%" class="column"><figure id="12fa0f9a-6eb0-80ab-911b-cfddefce4063" class="image"><a href="mf_allpts.jpg"><img style="width:330.984375px" src="mf_allpts.jpg"/></a><figcaption>All Harris Corner Points</figcaption></figure></div><div id="12fa0f9a-6eb0-8059-8af7-cbc02b548a99" style="width:50%" class="column"><figure id="12fa0f9a-6eb0-800f-80a9-ceb6d016de4c" class="image"><a href="mf_anmspts.jpg"><img style="width:330.984375px" src="mf_anmspts.jpg"/></a><figcaption>ANMS Points</figcaption></figure></div></div><div id="12fa0f9a-6eb0-8095-aa14-c840c31dbe62" class="column-list"><div id="12fa0f9a-6eb0-8074-ae35-e1f48eb149c0" style="width:50%" class="column"><figure id="12fa0f9a-6eb0-8038-871f-c319f864e14d" class="image"><a href="mf2_allpts.jpg"><img style="width:330.984375px" src="mf2_allpts.jpg"/></a><figcaption>All Harris Corner Points</figcaption></figure></div><div id="12fa0f9a-6eb0-8082-85c1-f01c828e4c77" style="width:50%" class="column"><figure id="12fa0f9a-6eb0-8095-8dd5-f2347d68a8e5" class="image"><a href="cad7c8f7-8f5d-4ad6-853b-796f1cae95cc.png"><img style="width:429.06122448979596px" src="cad7c8f7-8f5d-4ad6-853b-796f1cae95cc.png"/></a><figcaption>ANMS Points</figcaption></figure><p id="12fa0f9a-6eb0-8067-b654-d37eb6fe8333" class="">
+</p></div></div><h2 id="12fa0f9a-6eb0-80ce-9104-f9617de3fb5e" class="">Campanile</h2><div id="12fa0f9a-6eb0-8039-875e-f5495e82a8a9" class="column-list"><div id="12fa0f9a-6eb0-8033-afbb-fe45ffbd2877" style="width:50%" class="column"><figure id="12fa0f9a-6eb0-8010-a3b4-f7be19733d9b" class="image"><a href="fh_allpts.jpg"><img style="width:200.5859375px" src="fh_allpts.jpg"/></a><figcaption>All Harris Corner Points</figcaption></figure></div><div id="12fa0f9a-6eb0-807e-9a34-fe299f3c7276" style="width:50%" class="column"><figure id="12fa0f9a-6eb0-80c6-963b-f259c8e17dc0" class="image"><a href="fh_amns.jpg"><img style="width:200.5859375px" src="fh_amns.jpg"/></a><figcaption>ANMS Points</figcaption></figure></div></div><div id="12fa0f9a-6eb0-807e-87b0-c66162652521" class="column-list"><div id="12fa0f9a-6eb0-800f-92b0-d058634af2c7" style="width:50%" class="column"><figure id="12fa0f9a-6eb0-80f0-bc12-ca0fba5a8da5" class="image"><a href="fh2_allpts.jpg"><img style="width:200.5859375px" src="fh2_allpts.jpg"/></a><figcaption>All Harris Corner Points</figcaption></figure></div><div id="12fa0f9a-6eb0-807f-94be-f9649051080a" style="width:50%" class="column"><figure id="12fa0f9a-6eb0-8019-ab2a-f104691488c7" class="image"><a href="fh2_amns.jpg"><img style="width:200.5859375px" src="fh2_amns.jpg"/></a><figcaption>ANMS Points</figcaption></figure></div></div><h2 id="12fa0f9a-6eb0-80fb-ad6e-edfe4c4fc3f6" class="">BWW</h2><div id="12fa0f9a-6eb0-8007-9dfa-d839a5a7072e" class="column-list"><div id="12fa0f9a-6eb0-807c-96e5-e25e450dc257" style="width:50%" class="column"><figure id="12fa0f9a-6eb0-8014-a32f-d3fa82e8a4f2" class="image"><a href="bwwf1_anms.jpg"><img style="width:330.984375px" src="bwwf1_anms.jpg"/></a><figcaption>All Harris Corner Points</figcaption></figure></div><div id="12fa0f9a-6eb0-80fd-9555-d63e3862a495" style="width:50%" class="column"><figure id="12fa0f9a-6eb0-80b4-b853-f0731c966f1e" class="image"><a href="bwwf1_anms_real.jpg"><img style="width:330.9921875px" src="bwwf1_anms_real.jpg"/></a><figcaption>ANMS Points</figcaption></figure></div></div><div id="12fa0f9a-6eb0-8020-a50e-c40ea7d58675" class="column-list"><div id="12fa0f9a-6eb0-807f-b24e-de9bbf06be4c" style="width:50%" class="column"><figure id="12fa0f9a-6eb0-80ee-9daf-c6d426627a77" class="image"><a href="bwwf2_anms.jpg"><img style="width:330.984375px" src="bwwf2_anms.jpg"/></a><figcaption>All Harris Corner Points</figcaption></figure></div><div id="12fa0f9a-6eb0-80ce-a58a-ea34a0a00da9" style="width:50%" class="column"><figure id="12fa0f9a-6eb0-8078-8b15-d2b28e61419d" class="image"><a href="bwwf2_anms_real.jpg"><img style="width:658px" src="bwwf2_anms_real.jpg"/></a><figcaption>ANMS Points</figcaption></figure></div></div><h1 id="12fa0f9a-6eb0-8075-9c45-c2b7d325e560" class="">Part 2 + 3: Extracting Feature Descriptor for each feature point +  Matching these feature descriptors between two images </h1><p id="12fa0f9a-6eb0-80ce-97a5-c2cda64a7748" class="">Create a 40x40 area around each point to get patches from the previous part and resize to an 8x8 area using cv2.resize. Normalized and grayscaled the image (per OH and peer rec from paper) and flatten the descriptor so now it’s 1x64. After extracting the features, want to match them together so can get a finalized point set to use for RANSAC. Compute Nearest Neighbors and construct pairs of corresponding points between the images to use for RANSAC. Can do NN both ways to ensure that the match works both ways and is more likely to be accurate. </p><p id="12fa0f9a-6eb0-8027-a04d-c6c1bd0f34a5" class="">
+</p><h2 id="12fa0f9a-6eb0-808e-bf10-ccb211a435a1" class="">Mulford</h2><div id="12fa0f9a-6eb0-80e6-b788-d80104cf028b" class="column-list"><div id="12fa0f9a-6eb0-80f2-bb51-d422f5b849be" style="width:50%" class="column"><figure id="12fa0f9a-6eb0-802e-8369-f8b1544f6645" class="image"><a href="mf_8x8.jpg"><img style="width:330.984375px" src="mf_8x8.jpg"/></a><figcaption>8x8 of img1</figcaption></figure></div><div id="12fa0f9a-6eb0-80f6-adc7-cde323487bff" style="width:50%" class="column"><figure id="12fa0f9a-6eb0-80eb-b3a2-d9e98760cb92" class="image"><a href="mf2_8x8.jpg"><img style="width:330.984375px" src="mf2_8x8.jpg"/></a><figcaption>8x8 of img2</figcaption></figure></div></div><figure id="12fa0f9a-6eb0-80c1-af14-dcfb9d09abee" class="image"><a href="mf_feature_matching.jpg"><img style="width:720px" src="mf_feature_matching.jpg"/></a></figure><h2 id="12fa0f9a-6eb0-80eb-bb91-dec8852161c3" class="">Campanile</h2><div id="12fa0f9a-6eb0-807b-8d4c-dcbb6fc8fc6a" class="column-list"><div id="12fa0f9a-6eb0-804d-9337-c7c466ae4ed3" style="width:50%" class="column"><figure id="12fa0f9a-6eb0-8013-89c0-de626a9ca5ee" class="image"><a href="fh_8x8.jpg"><img style="width:331px" src="fh_8x8.jpg"/></a><figcaption>8x8 of img1</figcaption></figure></div><div id="12fa0f9a-6eb0-8039-b472-d444ff939064" style="width:50%" class="column"><figure id="12fa0f9a-6eb0-804c-8594-d2a606ece8dd" class="image"><a href="fh2_8x8.jpg"><img style="width:330.984375px" src="fh2_8x8.jpg"/></a><figcaption>8x8 of img2</figcaption></figure></div></div><figure id="12fa0f9a-6eb0-80d6-bb47-cf04ddef2765" class="image"><a href="fh_feature_matching.jpg"><img style="width:672px" src="fh_feature_matching.jpg"/></a></figure><h2 id="12fa0f9a-6eb0-8057-8f47-c80b58536481" class="">BWW</h2><div id="12fa0f9a-6eb0-8095-abfc-fb92f2ed13cd" class="column-list"><div id="12fa0f9a-6eb0-80c0-9a68-c75c91458729" style="width:50%" class="column"><figure id="12fa0f9a-6eb0-8023-aab8-fccd96c52f0c" class="image"><a href="d1_8x8.jpg"><img style="width:330.984375px" src="d1_8x8.jpg"/></a><figcaption>8x8 of img1</figcaption></figure></div><div id="12fa0f9a-6eb0-805a-acfd-fecc6274ed5e" style="width:50%" class="column"><figure id="12fa0f9a-6eb0-80f4-a16a-e6e2f64f5ae0" class="image"><a href="d2_real_amns.jpg"><img style="width:330.984375px" src="d2_real_amns.jpg"/></a><figcaption>8x8 of img2</figcaption></figure></div></div><figure id="12fa0f9a-6eb0-8025-98f0-c630ff1096d2" class="image"><a href="cee1b6ce-858c-48cb-8874-f817a631d2b1.png"><img style="width:768px" src="cee1b6ce-858c-48cb-8874-f817a631d2b1.png"/></a></figure><p id="12fa0f9a-6eb0-8041-8d61-c22701559fae" class="">
+</p><h1 id="12fa0f9a-6eb0-802a-8bfb-e5e84d50a799" class="">Part 4: RANSAC (to compute Homography)</h1><p id="12fa0f9a-6eb0-8086-90cb-d34f795db59f" class="">This is a robust way to get get homographies. Feature matching gets a stronger set of points but want to filter out any possible outliers to leave us with most ideal and strongest points to get the Homography (done by RANSAC). Sample 4 points randomly from the feature matching output to then get the Homography and check the amount of inliers. We repeat the process and keep the homography that has the most inliers to use again for Mosaic creation. </p><p id="12fa0f9a-6eb0-8015-86c5-dc5ad350dfd5" class="">
+</p><h2 id="12fa0f9a-6eb0-80a8-bbfe-c5884a072892" class="">Mulford</h2><figure id="12fa0f9a-6eb0-80d3-8211-c355b6505d92" class="image"><a href="1af94284-1b47-41a5-87a1-5fe462f45b94.png"><img style="width:708px" src="1af94284-1b47-41a5-87a1-5fe462f45b94.png"/></a></figure><h2 id="12fa0f9a-6eb0-805a-bfa3-f1fc88b0c7a9" class="">Campanile</h2><figure id="12fa0f9a-6eb0-8090-b3d1-e1745e425593" class="image"><a href="ebeb57b1-0924-4237-890c-fedbd34a1c9c.png"><img style="width:435.51867219917017px" src="ebeb57b1-0924-4237-890c-fedbd34a1c9c.png"/></a></figure><h2 id="12fa0f9a-6eb0-8010-9a9a-c07ebb124181" class="">Doe + Campanile</h2><p id="12fa0f9a-6eb0-8092-bc68-eb26e3f42fd5" class="">
+</p><figure id="12fa0f9a-6eb0-8098-9073-e41eb9d6b6e7" class="image"><a href="6780c446-f463-4772-b657-ff15975fe03e.png"><img style="width:484.7816091954023px" src="6780c446-f463-4772-b657-ff15975fe03e.png"/></a></figure><p id="12fa0f9a-6eb0-8089-a844-fce3afacbc73" class="">
+</p><h1 id="12fa0f9a-6eb0-80d6-89ce-e6f3a73132a8" class="">Part 5: Mosaic’s Robust Revenge</h1><p id="12fa0f9a-6eb0-8096-88f4-ea1b6d7da84b" class="">Take it up a notch and using the part b steps with Harris Corners, ANMS, feature Matching and RANSAC, can display mosaics but don’t manually select points this time (code does it for us).</p><p id="12fa0f9a-6eb0-8069-830d-ce09a7db4926" class=""> </p><h2 id="12fa0f9a-6eb0-80d8-a43a-f90db2c650d3" class="">Mulford</h2><div id="12fa0f9a-6eb0-8071-b84d-e5d9fbece392" class="column-list"><div id="12fa0f9a-6eb0-805d-9dda-f2632cac1878" style="width:50%" class="column"><figure id="12fa0f9a-6eb0-801e-8846-c2fb74bf0615" class="image"><a href="mf1_as_warp.jpg"><img style="width:330.96875px" src="mf1_as_warp.jpg"/></a><figcaption>AS_Im1warp</figcaption></figure></div><div id="12fa0f9a-6eb0-8094-9fb7-c3aea36c012e" style="width:50%" class="column"><figure id="12fa0f9a-6eb0-8006-9819-d3746d12dc8f" class="image"><a href="mf2_as_warp.jpg"><img style="width:330.96875px" src="mf2_as_warp.jpg"/></a><figcaption>AS_Im2warp</figcaption></figure><p id="12fa0f9a-6eb0-80e6-abcc-c1a18b24f67e" class="">
+</p></div></div><div id="12fa0f9a-6eb0-804b-a526-f1973ddd77a5" class="column-list"><div id="12fa0f9a-6eb0-80b9-9fc8-d050f37bbad4" style="width:50%" class="column"><figure id="12fa0f9a-6eb0-80c0-9cec-ec75645762a7" class="image"><a href="mf_as_mask1.jpg"><img style="width:330.984375px" src="mf_as_mask1.jpg"/></a><figcaption>AS_mask1</figcaption></figure><figure id="12fa0f9a-6eb0-8036-8305-d848d8b88816" class="image"><a href="mf_as_dumbmethod.jpg"><img style="width:330.984375px" src="mf_as_dumbmethod.jpg"/></a><figcaption>AS Mosaic Dumb Method</figcaption></figure><p id="12fa0f9a-6eb0-80eb-92e6-ed0c138042e4" class="">
+</p></div><div id="12fa0f9a-6eb0-80f4-bcb4-d599c2b8d77f" style="width:50%" class="column"><figure id="12fa0f9a-6eb0-80fd-810e-f505f24de838" class="image"><a href="mf_as_mask2.jpg"><img style="width:331px" src="mf_as_mask2.jpg"/></a><figcaption>AS_mask2</figcaption></figure><p id="12fa0f9a-6eb0-80e0-9c24-cf0f01d86f55" class="">
+</p><p id="12fa0f9a-6eb0-80e7-88c5-d261214423a4" class="">
+</p></div></div><figure id="12fa0f9a-6eb0-8080-8c10-ee3bfa0d0392" class="image"><a href="mf_done%201.jpg"><img style="width:330.96875px" src="mf_done%201.jpg"/></a><figcaption>Mosaic Image Blending + Distance Transform</figcaption></figure><figure id="12fa0f9a-6eb0-8097-a95a-efd635ab57cd" class="image"><a href="mf_as_done.jpg"><img style="width:707.984375px" src="mf_as_done.jpg"/></a><figcaption>AS Mosaic Image Blending + Distance Transform</figcaption></figure><h2 id="12fa0f9a-6eb0-803d-81be-d78bd5a08111" class="">Campanile</h2><div id="12fa0f9a-6eb0-80e9-984a-e1d4ccf17e5d" class="column-list"><div id="12fa0f9a-6eb0-8076-9e4f-cab0d2c7ebfa" style="width:50%" class="column"><figure id="12fa0f9a-6eb0-8004-892d-fb9efd51bac7" class="image"><a href="fh1_as_warp.jpg"><img style="width:330.984375px" src="fh1_as_warp.jpg"/></a><figcaption>AS_Im1warp</figcaption></figure></div><div id="12fa0f9a-6eb0-8077-8238-f4758d01b75a" style="width:50%" class="column"><figure id="12fa0f9a-6eb0-80ef-97d8-d5be8df73248" class="image"><a href="fh2_as_warp.jpg"><img style="width:330.984375px" src="fh2_as_warp.jpg"/></a><figcaption>AS_Im2warp</figcaption></figure></div></div><div id="12fa0f9a-6eb0-807b-be7d-d4f801d9f11e" class="column-list"><div id="12fa0f9a-6eb0-80df-81bd-ef197a50f91b" style="width:50%" class="column"><figure id="12fa0f9a-6eb0-802c-81a0-d2c3086f7b23" class="image"><a href="fh_as_mask1.jpg"><img style="width:330.984375px" src="fh_as_mask1.jpg"/></a><figcaption>AS_mask1</figcaption></figure></div><div id="12fa0f9a-6eb0-80d2-9541-e5761c5a89ae" style="width:50%" class="column"><figure id="12fa0f9a-6eb0-80fe-9323-ee768f89f22f" class="image"><a href="0115e5bd-b5e9-46a5-8a67-7df5eae1ca7f.png"><img style="width:336px" src="0115e5bd-b5e9-46a5-8a67-7df5eae1ca7f.png"/></a><figcaption>AS_mask2</figcaption></figure></div></div><figure id="12fa0f9a-6eb0-8039-a86e-f54649f0f03d" class="image"><a href="fh_as_dumbmethod.jpg"><img style="width:330.984375px" src="fh_as_dumbmethod.jpg"/></a><figcaption>AS Mosaic Dumb Method</figcaption></figure><figure id="12fa0f9a-6eb0-8023-b7fb-cddf2c9b6f86" class="image"><a href="3703a952-39df-47cd-a453-b61cadcacc0e.png"><img style="width:336px" src="3703a952-39df-47cd-a453-b61cadcacc0e.png"/></a><figcaption>AS Mosaic Image Blending + Distance Transform</figcaption></figure><figure id="12fa0f9a-6eb0-8006-bf28-f71c08a768b0" class="image"><a href="fh_done%201.jpg"><img style="width:720px" src="fh_done%201.jpg"/></a><figcaption>Mosaic Image Blending + Distance Transform</figcaption></figure><h2 id="12fa0f9a-6eb0-80e8-a56d-f6f571183bb6" class="">BWW</h2><div id="12fa0f9a-6eb0-80f7-8ff3-ecfd6ac14d54" class="column-list"><div id="12fa0f9a-6eb0-805f-b403-fd3e19173fd7" style="width:50%" class="column"><figure id="12fa0f9a-6eb0-80ad-a101-e5a959fe56ec" class="image"><a href="bwwf1_as_warp.jpg"><img style="width:331px" src="bwwf1_as_warp.jpg"/></a><figcaption>AS_Im1warp</figcaption></figure></div><div id="12fa0f9a-6eb0-8034-9653-eb57b2391202" style="width:50%" class="column"><figure id="12fa0f9a-6eb0-80cf-b66b-dcebbf36112a" class="image"><a href="bwwf2_as_warp.jpg"><img style="width:330.984375px" src="bwwf2_as_warp.jpg"/></a><figcaption>AS_Im2warp</figcaption></figure></div></div><div id="12fa0f9a-6eb0-809b-b2ce-f25cc889b605" class="column-list"><div id="12fa0f9a-6eb0-80fd-9ace-d603ae34f09a" style="width:50%" class="column"><figure id="12fa0f9a-6eb0-80b4-ab0f-cefd748e070f" class="image"><a href="bww_as_warp1.jpg"><img style="width:662px" src="bww_as_warp1.jpg"/></a><figcaption>AS_mask1</figcaption></figure></div><div id="12fa0f9a-6eb0-8079-90d5-f4cf13253457" style="width:50%" class="column"><figure id="12fa0f9a-6eb0-8049-a1ef-fcf7917479e0" class="image"><a href="bww_as_warp2.jpg"><img style="width:330.984375px" src="bww_as_warp2.jpg"/></a><figcaption>AS_mask2</figcaption></figure></div></div><figure id="12fa0f9a-6eb0-80a4-9260-c8e2f0bd546b" class="image"><a href="bww_as_dumbmethod.jpg"><img style="width:664px" src="bww_as_dumbmethod.jpg"/></a><figcaption>AS Mosaic Dumb Method</figcaption></figure><figure id="12fa0f9a-6eb0-807c-bdc1-f237cd6ee684" class="image"><a href="bww_as_done.jpg"><img style="width:707.9921875px" src="bww_as_done.jpg"/></a><figcaption>AS Mosaic Image Blending + Distance Transform</figcaption></figure><figure id="12fa0f9a-6eb0-805e-a0a1-faec797c95de" class="image"><a href="bww_done%201.jpg"><img style="width:708px" src="bww_done%201.jpg"/></a><figcaption>Mosaic Image Blending + Distance Transform</figcaption></figure><p id="12fa0f9a-6eb0-8015-8304-d58971e0cbd8" class="">
+</p><p id="12fa0f9a-6eb0-8054-936e-f73970a22f72" class="">
+</p><p id="12fa0f9a-6eb0-8092-a8fe-f8bad9add3e9" class="">Results turned out quite nicely with less black space overall but otherwise very similar results to manually selecting points. Smoother more rectangular images vs looking megaphone shaped.</p><p id="12fa0f9a-6eb0-8021-b445-d7be7029084c" class="">
+</p><p id="126a0f9a-6eb0-807b-b1e2-e5640c4fe593" class="">Project was really cool overall and while frustrating for the warp, it’s nice to see results and the possible ways to make this work for us (ie one way in lecture to sus out the floor art design) Automating a process always a time save in long run and really cool to see how it figures out which points are the best. </p></div></article><span class="sans" style="font-size:14px;padding-top:2em"></span></body></html>
